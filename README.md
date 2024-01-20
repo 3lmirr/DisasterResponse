@@ -12,4 +12,3 @@
 
 3. Run your web app: `python run.py`
 
-4. Click the `PREVIEW` button to open the homepage
