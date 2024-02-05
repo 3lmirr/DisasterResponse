@@ -2,7 +2,7 @@
 
 ## Table of Contents
 1. [Description](#description)
-2. [Getting Started](#getting_started)
+2. [Instructions](#instructions)
 	1. [Dependencies](#dependencies)
 	3. [Executing Program](#execution)
 	4. [Additional Material](#material)
@@ -21,8 +21,9 @@ This project is divided in the following key sections:
 3. Run a web app which can show model results in real time
 
 
-<a name="execution"></a>
-### Instructions:
+<a name="instructions"></a>
+
+## Instructions:
 1. Run the following commands in the project's root directory to set up your database and model.
 
     - To run ETL pipeline that cleans data and stores in database
