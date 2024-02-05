@@ -48,9 +48,5 @@ The project encompasses several key phases:
 * [Udacity](https://www.udacity.com/) 
 * [Figure Eight](https://www.figure-eight.com/) 
 
-![Train Classifier without Category Level Precision Recall](screenshots/train_classifier.png)
 
-6. Sample run of train_classifier.py with precision, recall etc. for each category
-
-![Train Classifier with Category Level Precision Recall](screenshots/train_classifier_category_precision_recall.png)
 
