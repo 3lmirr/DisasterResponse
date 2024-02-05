@@ -9,13 +9,15 @@
 <a name="descripton"></a>
 ## Description
 
-This Project is part of Data Science Nanodegree Program by Udacity in collaboration with Figure Eight. The dataset contains pre-labelled tweet and messages from real-life disaster events. The project aim is to build a Natural Language Processing (NLP) model to categorize messages on a real time basis.
+This project, a collaboration between Udacity's Data Science Nanodegree Program and Figure Eight, revolves around analyzing a dataset comprising pre-labeled tweets and messages associated with real-life disaster events. The primary objective is to develop an efficient Natural Language Processing (NLP) model capable of swiftly categorizing incoming messages in real-time.
 
-This project is divided in the following key sections:
+The project encompasses several key phases:
 
-1. Processing data, building an ETL pipeline to extract data from source, clean the data and save them in a SQLite DB
-2. Build a machine learning pipeline to train the which can classify text message in various categories
-3. Run a web app which can show model results in real time
+1. Data Processing: This phase entails constructing an ETL (Extract, Transform, Load) pipeline to collect data from the source, cleanse it thoroughly, and then store it in a SQLite database.
+
+2. Machine Learning Pipeline: Here, the focus is on building a robust machine learning pipeline. This pipeline will be trained to classify text messages into diverse categories, leveraging the power of NLP techniques.
+
+3. Web Application Deployment: In the final stage, a user-friendly web application is deployed. This application serves as an interface for showcasing the model's results in real-time, providing users with a seamless experience to interact with the classification system.
 
 
 <a name="instructions"></a>
@@ -33,7 +35,7 @@ This project is divided in the following key sections:
 
 3. Run your web app: `python run.py`
 
-4. Go to http://0.0.0.0:3001/
+4. Go to [http://0.0.0.0:3001/](http://127.0.0.1:3000)
 
 
 <a name="license"></a>
