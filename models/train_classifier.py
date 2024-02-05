@@ -16,7 +16,7 @@ from xgboost import XGBClassifier
 from scipy.sparse import csr_matrix
 import nltk
 from nltk import word_tokenize
-from nltk.stem import PorterStemmer
+from nltk.stem import PorterStemmer, WordNetLemmatizer
 from nltk.corpus import stopwords
 nltk.download(['punkt','stopwords'])
 import pickle
@@ -27,14 +27,27 @@ warnings.filterwarnings('ignore')
 
 tfidf = TfidfTransformer()
 stemmer = PorterStemmer()
+lemmatizer = WordNetLemmatizer()
 
-def load_data(database_filepath):
+def load_from_db(database_filepath):
+    """
+    Load Data from the Database Function
 
+    Arguments:
+        database_filepath -> Path to SQLite destination database (e.g. disaster_response_db.db)
+    Output:
+        X -> a dataframe containing features
+        Y -> a dataframe containing labels
+        category_names -> List of categories name
+    """
     # Create a SQLAlchemy engine to connect to the SQLite database
     engine = create_engine(f"sqlite:///{database_filepath}")
 
     # Load data from the default table name (same as the DataFrame name)
     df = pd.read_sql_table("disastertable",engine)
+
+    #The value 2 in the related field is so small that it might be considered an error. To address this, we'll replace 2 with 1 to treat it as a valid response.
+    df['related']=df['related'].map(lambda x: 1 if x == 2 else x)
     
     X = df['message']
     y = df.drop(['id','message','original','genre'], axis=1)
@@ -45,13 +58,56 @@ def load_data(database_filepath):
 
 #Tokenization function for CountVectorizer
 def series_tokenizer(pd_series):
-    wt = word_tokenize(re.sub(r'[^a-zA-Z]',' ',pd_series.lower()))
-    stemmed_series = [stemmer.stem(i) for i in wt if i not in stopwords.words('english')]
-    return stemmed_series
+    """
+     Tokenize the text function
 
+     Arguments:
+         text -> Text message which needs to be tokenized
+     Output:
+         clean_tokens -> List of tokens extracted from the provided text
+     """
+    wt = word_tokenize(re.sub(r'[^a-zA-Z]',' ',pd_series.lower()))
+    lemmatized_series = [lemmatizer.lemmatize(i) for i in wt if i not in stopwords.words('english')]
+    return lemmatized_series
+
+
+# Text Normalization function for Word Counter
+
+def word_normalize(text):
+    """
+    Normalize text for word counting.
+
+    This function takes a list of text inputs and performs the following normalization steps:
+    1. Removes non-alphabetic characters and converts text to lowercase.
+    2. Tokenizes the normalized text into words.
+    3. Stems each word (reduces words to their root form) using the Porter stemmer.
+    4. Removes stopwords (commonly occurring words) from the tokenized text.
+    5. Joins the processed words back into strings.
+
+    Parameters:
+    text (list of str): List of text inputs to be normalized.
+
+    Returns:
+    list of str: List of normalized text strings.
+    """
+    reg = [re.sub(r'[^a-zA-Z]', " ", z.lower()) for z in text]
+    token = [word_tokenize(i) for i in reg]
+    stem = [[stemmer.stem(i) for i in x if i not in stopwords.words('english')] for x in token]
+    final = [" ".join(i) for i in stem]
+
+    return final
 
 # Analyzing frequency of words to create categories as a new feature
 def word_counter(text):
+    """
+    Count the occurrences of each word in the given text and print the results.
+
+    Parameters:
+    text (str): The input text to analyze.
+
+    Returns:
+    None
+    """
     sentences = word_normalize(text)
     joined_text = ' '.join(sentences)
     tokenized_words = joined_text.split()
@@ -63,6 +119,21 @@ def word_counter(text):
 
 
 class Category(BaseEstimator, TransformerMixin):
+    """
+    Transformer class to categorize text based on predefined categories.
+
+    Parameters:
+    None
+
+    Attributes:
+    category_list (list): List of categories to categorize the text into.
+    df (DataFrame): DataFrame to hold the categorization results.
+
+    Methods:
+    fit(X, y=None): Fit method required by scikit-learn's TransformerMixin interface.
+    define_category(text): Method to categorize the input text based on predefined categories.
+    transform(X): Transform method required by scikit-learn's TransformerMixin interface.
+    """
 
     def __init__(self):
         self.category_list = ['water', 'food', 'earthquak', 'flood', 'rain', 'tent', 'aid', 'storm', 'diseas',
@@ -118,6 +189,25 @@ def build_model():
 
 
 def evaluate_model(y_train, X_pred, y_test, y_pred):
+    """
+    Evaluate the performance of a multi-label classification model.
+
+    Parameters:
+    y_train : DataFrame
+        Ground truth labels for the training set.
+
+    X_pred : array-like, shape (n_samples, n_features)
+        Predicted labels for the training set.
+
+    y_test : DataFrame
+        Ground truth labels for the test set.
+
+    y_pred : array-like, shape (n_samples, n_features)
+        Predicted labels for the test set.
+
+    Returns:
+    None
+    """
     train_classification_matrix = {}
     train_acc_matrix = {}
 
@@ -158,12 +248,34 @@ def evaluate_model(y_train, X_pred, y_test, y_pred):
     
     
 def save_model(model, model_filepath):
+    """
+    Save Pipeline function
+
+    This function saves trained model as Pickle file, to be loaded later.
+
+    Arguments:
+        pipeline : GridSearchCV or Scikit Pipelin object
+        pickle_filepath : destination path to save .pkl file
+
+    """
     with open('model.pkl','wb') as model_file:
         pickle.dump(model,model_file)
         
 
 
 def main():
+    """
+    Main function to train, evaluate, and save a classifier model.
+
+    This function takes two command-line arguments: the filepath of the disaster messages database
+    and the filepath of the pickle file to save the trained model to.
+
+    It loads data from the database, splits it into training and testing sets, builds a classifier model,
+    trains the model on the training data, evaluates the model on the testing data, saves the trained model,
+    and prints the fit time, best parameters, and evaluation results.
+
+    If the command-line arguments are not provided correctly, it prints a usage message.
+    """
     if len(sys.argv) == 3:
         database_filepath, model_filepath = sys.argv[1:]
         print('Loading data...\n    DATABASE: {}'.format(database_filepath))

@@ -25,19 +25,42 @@ warnings.filterwarnings('ignore')
 stemmer = PorterStemmer()
 
 
-# Tokenization function for CountVectorizer
+#Tokenization function for CountVectorizer
 def series_tokenizer(pd_series):
-    wt = word_tokenize(re.sub(r'[^a-zA-Z]', ' ', pd_series.lower()))
-    stemmed_series = [stemmer.stem(i) for i in wt if i not in stopwords.words('english')]
-    return stemmed_series
+    """
+     Tokenize the text function
+
+     Arguments:
+         text -> Text message which needs to be tokenized
+     Output:
+         clean_tokens -> List of tokens extracted from the provided text
+     """
+    wt = word_tokenize(re.sub(r'[^a-zA-Z]',' ',pd_series.lower()))
+    lemmatized_series = [lemmatizer.lemmatize(i) for i in wt if i not in stopwords.words('english')]
+    return lemmatized_series
 
 
 vect = CountVectorizer(tokenizer=series_tokenizer)
 tfidf = TfidfTransformer()
 
 
-# Normalization function for Word Counter
 def word_normalize(text):
+    """
+    Normalize text for word counting.
+
+    This function takes a list of text inputs and performs the following normalization steps:
+    1. Removes non-alphabetic characters and converts text to lowercase.
+    2. Tokenizes the normalized text into words.
+    3. Stems each word (reduces words to their root form) using the Porter stemmer.
+    4. Removes stopwords (commonly occurring words) from the tokenized text.
+    5. Joins the processed words back into strings.
+
+    Parameters:
+    text (list of str): List of text inputs to be normalized.
+
+    Returns:
+    list of str: List of normalized text strings.
+    """
     reg = [re.sub(r'[^a-zA-Z]', " ", z.lower()) for z in text]
     token = [word_tokenize(i) for i in reg]
     stem = [[stemmer.stem(i) for i in x if i not in stopwords.words('english')] for x in token]
@@ -85,6 +108,8 @@ app = Flask(__name__)
 engine = create_engine("sqlite:///data/DisasterResponse.db")
 df = pd.read_sql_table('disastertable', engine)
 
+y = df.drop(['id', 'message', 'original', 'genre'], axis=1)
+
 # load model
 model = joblib.load("app/model.pkl")
 
@@ -97,6 +122,9 @@ def index():
     # TODO: Below is an example - modify to extract data for your own visuals
     genre_counts = df.groupby('genre').count()['message']
     genre_names = list(genre_counts.index)
+
+    category_names = y.columns
+    category_boolean = (y != 0).sum().values
 
     # create visuals
     # TODO: Below is an example - modify to create your own visuals
@@ -118,7 +146,27 @@ def index():
                     'title': "Genre"
                 }
             }
-        }
+        },
+             # GRAPH 2 - category graph
+             {
+                 'data': [
+                     Bar(
+                         x=category_names,
+                         y=category_boolean
+                     )
+                 ],
+
+                 'layout': {
+                     'title': 'Distribution of Message Categories',
+                     'yaxis': {
+                         'title': "Count"
+                     },
+                     'xaxis': {
+                         'title': "Category",
+                         'tickangle': 35
+                     }
+                 }
+             }
     ]
 
     # encode plotly graphs in JSON

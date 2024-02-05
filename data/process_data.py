@@ -9,6 +9,16 @@ from sqlalchemy import create_engine
 
 
 def load_data(messages_filepath, categories_filepath):
+    """
+    Load and merge message and category data from CSV files.
+
+    Parameters:
+    messages_filepath (str): Filepath to the CSV file containing message data.
+    categories_filepath (str): Filepath to the CSV file containing category data.
+
+    Returns:
+    df (DataFrame): Merged DataFrame containing both message and category data.
+    """
 
     messages = pd.read_csv(messages_filepath)
     categories = pd.read_csv(categories_filepath)
@@ -18,6 +28,18 @@ def load_data(messages_filepath, categories_filepath):
 
 
 def clean_data(df):
+    """
+    Clean the DataFrame containing message and category data.
+
+    This function splits the 'categories' column into separate category columns,
+    cleans up the category values, and merges them back into the DataFrame.
+
+    Parameters:
+    df (DataFrame): Input DataFrame containing message and category data.
+
+    Returns:
+    df (DataFrame): Cleaned DataFrame with separate category columns.
+    """
 
     categories = df['categories'].str.split(';',expand=True)
     row = categories.iloc[0]
@@ -39,6 +61,21 @@ def clean_data(df):
 
 
 def save_data(df, database_filepath):
+    """
+    Save DataFrame to a SQLite database.
+
+    This function saves the DataFrame to the specified SQLite database file
+    using SQLAlchemy's create_engine method. The table name in the database
+    is set to 'disastertable'.
+
+    Parameters:
+    df (DataFrame): Input DataFrame to be saved.
+    database_filepath (str): Filepath to the SQLite database.
+
+    Returns:
+    None
+    """
+
     # Create a SQLAlchemy engine to connect to the SQLite database
     engine = create_engine(f"sqlite:///{database_filepath}")
 
@@ -48,6 +85,23 @@ def save_data(df, database_filepath):
     print(f"Data successfully saved to {database_filepath}")
 
 def main():
+    """
+    Process raw message and category data, clean it, and save it to a database.
+
+    This function is the entry point for processing data. It takes three command-line arguments:
+    - The filepath of the CSV file containing message data.
+    - The filepath of the CSV file containing category data.
+    - The filepath of the SQLite database to save the cleaned data to.
+
+    It loads message and category data from the specified CSV files, cleans the data using the clean_data function,
+    and saves the cleaned data to the specified database using the save_data function.
+
+    Parameters:
+    None
+
+    Returns:
+    None
+    """
     if len(sys.argv) == 4:
 
         messages_filepath, categories_filepath, database_filepath = sys.argv[1:]
