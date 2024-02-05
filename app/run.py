@@ -123,8 +123,8 @@ def index():
     genre_counts = df.groupby('genre').count()['message']
     genre_names = list(genre_counts.index)
 
-    category_names = y.columns
-    category_boolean = (y != 0).sum().values
+    categories = y.columns
+    sum = (y != 0).sum().values
 
     # create visuals
     # TODO: Below is an example - modify to create your own visuals
@@ -151,19 +151,19 @@ def index():
              {
                  'data': [
                      Bar(
-                         x=category_names,
-                         y=category_boolean
+                         x=categories,
+                         y=sum
                      )
                  ],
 
                  'layout': {
-                     'title': 'Distribution of Message Categories',
+                     'title': 'Count of Message Categories',
                      'yaxis': {
                          'title': "Count"
                      },
                      'xaxis': {
                          'title': "Category",
-                         'tickangle': 35
+                         'tickangle': 30
                      }
                  }
              }
